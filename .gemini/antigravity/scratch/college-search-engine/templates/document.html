@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}{{ doc.title }} | Apex College Search{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb & Back Button -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}" class="text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item"><span class="badge bg-secondary-subtle text-secondary">{{ doc.category }}</span></li>
+                <li class="breadcrumb-item active text-truncate" style="max-width: 300px;" aria-current="page">{{ doc.title }}</li>
+            </ol>
+        </nav>
+        {% if return_query %}
+            <a href="{{ url_for('search', q=return_query) }}" class="btn btn-outline-secondary btn-sm rounded-pill">
+                <i class="fa-solid fa-arrow-left me-1"></i> Back to Search ("{{ return_query }}")
+            </a>
+        {% else %}
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm rounded-pill">
+                <i class="fa-solid fa-arrow-left me-1"></i> Back to Search
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Document Content Column -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5">
+                <!-- Header -->
+                <div class="border-bottom pb-4 mb-4">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-primary px-3 py-1 fs-6 fw-semibold">{{ doc.category }}</span>
+                        <span class="badge bg-light text-secondary border font-monospace">{{ doc.doc_id }}</span>
+                    </div>
+                    <h1 class="h2 fw-bold text-dark mb-3">{{ doc.title }}</h1>
+                    <div class="text-muted small d-flex flex-wrap align-items-center gap-3">
+                        <span><i class="fa-solid fa-globe me-1 text-primary"></i> <a href="{{ doc.url }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-muted">{{ doc.url }}</a></span>
+                        <span><i class="fa-regular fa-clock me-1 text-secondary"></i> {{ doc.created_at or 'Indexed' }}</span>
+                    </div>
+                </div>
+
+                <!-- Full Body Content -->
+                <div class="document-full-content text-dark fs-5 lh-lg mb-4">
+                    {{ highlighted_content | safe }}
+                </div>
+
+                <!-- Action Bar -->
+                <div class="d-flex align-items-center justify-content-between pt-3 border-top">
+                    <a href="{{ doc.url }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary rounded-pill px-4">
+                        Visit Source Page <i class="fa-solid fa-arrow-up-right-from-square ms-1"></i>
+                    </a>
+                    {% if return_query %}
+                        <button type="button" 
+                                class="btn btn-outline-success rounded-pill px-4" 
+                                onclick="toggleFeedback(this, '{{ return_query }}', '{{ doc.doc_id }}')">
+                            <i class="fa-solid fa-thumbs-up me-1"></i> Mark Relevant for "{{ return_query }}"
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar: Related Documents via Cosine Similarity -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                <h5 class="fw-bold text-dark mb-3">
+                    <i class="fa-solid fa-project-diagram text-primary me-2"></i>Related Pages
+                </h5>
+                <p class="text-muted small mb-3">
+                    Calculated using TF-IDF Vector Space cosine similarity with other indexed college documents:
+                </p>
+
+                {% if related_docs %}
+                    <div class="list-group list-group-flush">
+                        {% for rel in related_docs %}
+                            <div class="list-group-item px-0 py-3 border-bottom">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="badge bg-light text-secondary border small">{{ rel.category }}</span>
+                                    <span class="badge bg-info-subtle text-info border border-info-subtle small fw-bold">
+                                        Sim: {{ "%.3f"|format(rel.similarity) }}
+                                    </span>
+                                </div>
+                                <h6 class="fw-bold mb-1">
+                                    <a href="{{ url_for('view_document', doc_id=rel.doc_id, q=return_query) }}" class="text-decoration-none text-dark hover-primary">
+                                        {{ rel.title }}
+                                    </a>
+                                </h6>
+                                <div class="text-muted small text-truncate">{{ rel.url }}</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted small">No other similar documents found in index.</p>
+                {% endif %}
+            </div>
+
+            <!-- IR Metadata Card -->
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h6 class="fw-bold text-dark mb-2"><i class="fa-solid fa-database text-primary me-1"></i> Document IR Metadata</h6>
+                <ul class="list-unstyled small text-muted mb-0">
+                    <li class="mb-2"><strong>Doc ID:</strong> <code>{{ doc.doc_id }}</code></li>
+                    <li class="mb-2"><strong>Category:</strong> {{ doc.category }}</li>
+                    <li class="mb-2"><strong>Tokens:</strong> ~{{ token_count }} indexed tokens</li>
+                    <li><strong>Status:</strong> Active in Inverted Index</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

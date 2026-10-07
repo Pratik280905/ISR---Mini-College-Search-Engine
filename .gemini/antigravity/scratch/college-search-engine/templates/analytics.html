@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}Search Analytics Dashboard | Apex College Search{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4 pb-2 border-bottom">
+        <div>
+            <h2 class="fw-bold text-dark mb-1"><i class="fa-solid fa-chart-line text-primary me-2"></i>Search Analytics Dashboard</h2>
+            <p class="text-secondary small mb-0">Real-time metrics on student search patterns, popular queries, and zero-result monitoring</p>
+        </div>
+        <form action="{{ url_for('admin_clear_logs') }}" method="POST">
+            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill" onclick="return confirm('Reset all search logs and analytics?');">
+                <i class="fa-solid fa-arrows-rotate me-1"></i> Reset Analytics
+            </button>
+        </form>
+    </div>
+
+    <!-- Summary KPI Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-medium">Total Searches</div>
+                        <h3 class="fw-bold text-primary mb-0 mt-1">{{ summary.total_searches }}</h3>
+                    </div>
+                    <div class="p-3 bg-primary bg-opacity-10 text-primary rounded-3">
+                        <i class="fa-solid fa-magnifying-glass fa-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-medium">Avg Execution Time</div>
+                        <h3 class="fw-bold text-success mb-0 mt-1">{{ summary.avg_time_ms }} <span class="fs-6 fw-normal text-muted">ms</span></h3>
+                    </div>
+                    <div class="p-3 bg-success bg-opacity-10 text-success rounded-3">
+                        <i class="fa-solid fa-bolt fa-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-medium">Avg Results / Query</div>
+                        <h3 class="fw-bold text-info mb-0 mt-1">{{ summary.avg_results }}</h3>
+                    </div>
+                    <div class="p-3 bg-info bg-opacity-10 text-info rounded-3">
+                        <i class="fa-solid fa-list-ol fa-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-medium">Document Clicks</div>
+                        <h3 class="fw-bold text-warning mb-0 mt-1">{{ summary.total_clicks }}</h3>
+                    </div>
+                    <div class="p-3 bg-warning bg-opacity-10 text-warning rounded-3">
+                        <i class="fa-solid fa-arrow-pointer fa-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-4 mb-4">
+        <!-- Top 10 Searches Bar Chart -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-dark mb-0"><i class="fa-solid fa-ranking-star text-primary me-2"></i>Most Frequent Search Queries</h5>
+                    <span class="badge bg-light text-secondary border">Top 10</span>
+                </div>
+                <div style="height: 300px;">
+                    <canvas id="topQueriesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Document Distribution by Category Doughnut -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-dark mb-0"><i class="fa-solid fa-chart-pie text-success me-2"></i>Content Categories</h5>
+                    <span class="badge bg-light text-secondary border">Distribution</span>
+                </div>
+                <div style="height: 300px;">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Second Charts & Tables Row -->
+    <div class="row g-4">
+        <!-- Most Clicked Documents -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <h5 class="fw-bold text-dark mb-3"><i class="fa-solid fa-fire text-danger me-2"></i>Most Clicked College Pages</h5>
+                {% if summary.top_clicked %}
+                    <div class="list-group list-group-flush">
+                        {% for item in summary.top_clicked %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-bottom">
+                                <div class="text-truncate me-2">
+                                    <a href="{{ url_for('view_document', doc_id=item.doc_id) }}" class="text-decoration-none fw-semibold text-dark hover-primary">
+                                        {{ item.title }}
+                                    </a>
+                                    <div class="text-muted small"><code>{{ item.doc_id }}</code></div>
+                                </div>
+                                <span class="badge bg-primary rounded-pill px-3 py-2">{{ item.count }} clicks</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted small py-4 text-center">No document clicks recorded yet. Search and click result links to see analytics.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Zero-Result Queries Table -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-dark mb-0"><i class="fa-solid fa-triangle-exclamation text-warning me-2"></i>Zero-Result Queries</h5>
+                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Vocabulary Gaps</span>
+                </div>
+                {% if summary.zero_results %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle small mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Unmatched Query</th>
+                                    <th class="text-end">Times Searched</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for z in summary.zero_results %}
+                                    <tr>
+                                        <td><code>{{ z.query }}</code></td>
+                                        <td class="text-end"><span class="badge bg-secondary rounded-pill">{{ z.count }}</span></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="fa-regular fa-circle-check fa-2x text-success mb-2"></i>
+                        <p class="small mb-0">Great! No zero-result queries recorded so far.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Initialize Chart.js Data from Flask Backend
+    const topQueriesData = {{ summary.top_queries | tojson }};
+    const categoriesData = {{ summary.categories | tojson }};
+
+    // 1. Top Queries Horizontal Bar Chart
+    const ctxQueries = document.getElementById('topQueriesChart');
+    if (ctxQueries && topQueriesData.length > 0) {
+        new Chart(ctxQueries, {
+            type: 'bar',
+            data: {
+                labels: topQueriesData.map(d => d.query),
+                datasets: [{
+                    label: 'Search Count',
+                    data: topQueriesData.map(d => d.count),
+                    backgroundColor: 'rgba(13, 110, 253, 0.75)',
+                    borderColor: 'rgb(13, 110, 253)',
+                    borderWidth: 1,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { beginAtZero: true, ticks: { precision: 0 } }
+                }
+            }
+        });
+    } else if (ctxQueries) {
+        ctxQueries.parentElement.innerHTML = '<p class="text-muted text-center py-5">No queries logged yet. Run searches from the home page.</p>';
+    }
+
+    // 2. Categories Distribution Doughnut
+    const ctxCat = document.getElementById('categoryChart');
+    if (ctxCat && categoriesData.length > 0) {
+        new Chart(ctxCat, {
+            type: 'doughnut',
+            data: {
+                labels: categoriesData.map(c => c.category),
+                datasets: [{
+                    data: categoriesData.map(c => c.count),
+                    backgroundColor: [
+                        '#0d6efd', '#198754', '#0dcaf0', '#ffc107', 
+                        '#6610f2', '#fd7e14', '#20c997', '#6c757d', '#d63384'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'right', labels: { boxWidth: 12 } }
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}

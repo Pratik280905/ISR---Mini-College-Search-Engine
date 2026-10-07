@@ -1,0 +1,176 @@
+[
+  {
+    "id": 1,
+    "query": "computer engineering admission",
+    "category": "Admission",
+    "relevant_documents": [
+      "doc_003",
+      "doc_010",
+      "doc_011"
+    ]
+  },
+  {
+    "id": 2,
+    "query": "placement statistics average package",
+    "category": "Placement",
+    "relevant_documents": [
+      "doc_018",
+      "doc_017"
+    ]
+  },
+  {
+    "id": 3,
+    "query": "scholarship eligibility criteria",
+    "category": "Student Services",
+    "relevant_documents": [
+      "doc_013",
+      "doc_011"
+    ]
+  },
+  {
+    "id": 4,
+    "query": "semester examination timetable",
+    "category": "Examination",
+    "relevant_documents": [
+      "doc_015",
+      "doc_014",
+      "doc_028"
+    ]
+  },
+  {
+    "id": 5,
+    "query": "hostel accommodation fees",
+    "category": "Facilities",
+    "relevant_documents": [
+      "doc_023",
+      "doc_012"
+    ]
+  },
+  {
+    "id": 6,
+    "query": "central library digital books",
+    "category": "Facilities",
+    "relevant_documents": [
+      "doc_022"
+    ]
+  },
+  {
+    "id": 7,
+    "query": "summer internship training program",
+    "category": "Placement",
+    "relevant_documents": [
+      "doc_019",
+      "doc_017"
+    ]
+  },
+  {
+    "id": 8,
+    "query": "faculty professors qualifications",
+    "category": "Department",
+    "relevant_documents": [
+      "doc_020",
+      "doc_003"
+    ]
+  },
+  {
+    "id": 9,
+    "query": "anti ragging committee policy",
+    "category": "Governance",
+    "relevant_documents": [
+      "doc_034"
+    ]
+  },
+  {
+    "id": 10,
+    "query": "artificial intelligence data science curriculum",
+    "category": "Department",
+    "relevant_documents": [
+      "doc_005"
+    ]
+  },
+  {
+    "id": 11,
+    "query": "mechanical engineering laboratories",
+    "category": "Department",
+    "relevant_documents": [
+      "doc_007",
+      "doc_029"
+    ]
+  },
+  {
+    "id": 12,
+    "query": "civil engineering department",
+    "category": "Department",
+    "relevant_documents": [
+      "doc_008"
+    ]
+  },
+  {
+    "id": 13,
+    "query": "electronics telecommunication engineering",
+    "category": "Department",
+    "relevant_documents": [
+      "doc_006"
+    ]
+  },
+  {
+    "id": 14,
+    "query": "student grievance redressal cell",
+    "category": "Governance",
+    "relevant_documents": [
+      "doc_035"
+    ]
+  },
+  {
+    "id": 15,
+    "query": "information technology cap cutoff",
+    "category": "Admission",
+    "relevant_documents": [
+      "doc_004",
+      "doc_010"
+    ]
+  },
+  {
+    "id": 16,
+    "query": "academic calendar semester dates",
+    "category": "Examination",
+    "relevant_documents": [
+      "doc_028",
+      "doc_015"
+    ]
+  },
+  {
+    "id": 17,
+    "query": "sports gymkhana tournaments",
+    "category": "Facilities",
+    "relevant_documents": [
+      "doc_024"
+    ]
+  },
+  {
+    "id": 18,
+    "query": "principal message leadership",
+    "category": "Governance",
+    "relevant_documents": [
+      "doc_021",
+      "doc_002"
+    ]
+  },
+  {
+    "id": 19,
+    "query": "career guidance gate gre higher studies",
+    "category": "Student Services",
+    "relevant_documents": [
+      "doc_036"
+    ]
+  },
+  {
+    "id": 20,
+    "query": "student clubs technical events hackathon",
+    "category": "Student Services",
+    "relevant_documents": [
+      "doc_025",
+      "doc_026"
+    ]
+  }
+]

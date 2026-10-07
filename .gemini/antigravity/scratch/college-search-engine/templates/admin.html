@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}Admin & Web Crawler | Apex College Search{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4 pb-2 border-bottom">
+        <div>
+            <h2 class="fw-bold text-dark mb-1"><i class="fa-solid fa-gears text-primary me-2"></i>Admin & Crawler Management</h2>
+            <p class="text-secondary small mb-0">Control indexing pipeline, crawl external websites, and manage database records</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('evaluation') }}" class="btn btn-outline-primary btn-sm rounded-pill">
+                <i class="fa-solid fa-square-poll-vertical me-1"></i> Evaluation Suite
+            </a>
+            <a href="{{ url_for('analytics') }}" class="btn btn-outline-info btn-sm rounded-pill">
+                <i class="fa-solid fa-chart-line me-1"></i> Search Analytics
+            </a>
+        </div>
+    </div>
+
+    <!-- Index Statistics Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-medium">Total Documents</div>
+                        <h3 class="fw-bold text-dark mb-0 mt-1">{{ stats.document_count }}</h3>
+                    </div>
+                    <div class="p-3 bg-primary bg-opacity-10 text-primary rounded-3">
+                        <i class="fa-solid fa-file-lines fa-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-medium">Vocabulary Size</div>
+                        <h3 class="fw-bold text-dark mb-0 mt-1">{{ stats.vocabulary_size }}</h3>
+                    </div>
+                    <div class="p-3 bg-success bg-opacity-10 text-success rounded-3">
+                        <i class="fa-solid fa-spell-check fa-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-medium">Total Postings</div>
+                        <h3 class="fw-bold text-dark mb-0 mt-1">{{ stats.total_postings }}</h3>
+                    </div>
+                    <div class="p-3 bg-info bg-opacity-10 text-info rounded-3">
+                        <i class="fa-solid fa-list-check fa-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-medium">Index Status</div>
+                        <h4 class="fw-bold text-success mb-0 mt-1">
+                            {% if stats.is_ready %}<i class="fa-solid fa-circle-check text-success me-1"></i> READY{% else %}<i class="fa-solid fa-circle-exclamation text-warning me-1"></i> PENDING{% endif %}
+                        </h4>
+                    </div>
+                    <div class="p-3 bg-warning bg-opacity-10 text-warning rounded-3">
+                        <i class="fa-solid fa-database fa-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Management Action Buttons -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <h5 class="fw-bold text-dark mb-3"><i class="fa-solid fa-bolt text-warning me-2"></i>Quick Actions</h5>
+        <div class="d-flex flex-wrap gap-3">
+            <form action="{{ url_for('admin_load_demo') }}" method="POST" class="d-inline">
+                <button type="submit" class="btn btn-primary rounded-pill px-4" onclick="return confirm('Load 40+ built-in college sample documents into database and rebuild index?');">
+                    <i class="fa-solid fa-cloud-arrow-down me-1"></i> Load Demo Dataset
+                </button>
+            </form>
+
+            <form action="{{ url_for('admin_rebuild_index') }}" method="POST" class="d-inline">
+                <button type="submit" class="btn btn-outline-success rounded-pill px-4">
+                    <i class="fa-solid fa-rotate me-1"></i> Build / Rebuild Inverted Index
+                </button>
+            </form>
+
+            <a href="{{ url_for('evaluation') }}" class="btn btn-outline-info rounded-pill px-4">
+                <i class="fa-solid fa-square-poll-vertical me-1"></i> Run IR Evaluation
+            </a>
+
+            <form action="{{ url_for('admin_clear_logs') }}" method="POST" class="d-inline">
+                <button type="submit" class="btn btn-outline-danger rounded-pill px-4" onclick="return confirm('Clear search and click logs?');">
+                    <i class="fa-solid fa-trash-can me-1"></i> Clear Search Logs
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Live Web Crawler Card -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <div>
+                <h5 class="fw-bold text-dark mb-1"><i class="fa-solid fa-spider text-primary me-2"></i>Live Web Crawler</h5>
+                <p class="text-secondary small mb-0">Crawl live college web pages from a same-domain target URL and automatically index extracted content</p>
+            </div>
+            <span class="badge bg-light text-dark border">Requests & BeautifulSoup4</span>
+        </div>
+
+        <form id="crawler-form" onsubmit="startCrawler(event)">
+            <div class="row g-3 align-items-end mb-3">
+                <div class="col-md-6">
+                    <label class="form-label small fw-semibold text-dark">Target Website URL</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white text-muted"><i class="fa-solid fa-globe"></i></span>
+                        <input type="url" id="crawl-url" name="url" class="form-control" placeholder="https://example-college.edu" required>
+                    </div>
+                </div>
+
+                <div class="col-md-3 col-sm-6">
+                    <label class="form-label small fw-semibold text-dark">Max Pages</label>
+                    <input type="number" id="crawl-max-pages" name="max_pages" class="form-control" value="20" min="1" max="100">
+                </div>
+
+                <div class="col-md-3 col-sm-6">
+                    <label class="form-label small fw-semibold text-dark">Max Depth</label>
+                    <input type="number" id="crawl-depth" name="depth" class="form-control" value="2" min="1" max="4">
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-3">
+                <button type="submit" id="crawl-submit-btn" class="btn btn-success rounded-pill px-4">
+                    <i class="fa-solid fa-play me-1"></i> Start Crawling
+                </button>
+                <span id="crawl-spinner" class="spinner-border spinner-border-sm text-success d-none" role="status"></span>
+                <span id="crawl-status-text" class="text-muted small"></span>
+            </div>
+        </form>
+
+        <!-- Crawler Terminal / Output Log -->
+        <div class="mt-4">
+            <label class="form-label small fw-semibold text-dark d-flex justify-content-between">
+                <span>Crawler Live Output Log</span>
+                <span class="text-muted" id="crawl-count-badge">0 pages indexed</span>
+            </label>
+            <div id="crawl-log-terminal" class="bg-dark text-light p-3 rounded-3 font-monospace small" style="height: 220px; overflow-y: auto;">
+                <span class="text-muted">// Ready to crawl. Enter website URL and click 'Start Crawling'...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Indexed Documents Table -->
+    <div class="card border-0 shadow-sm rounded-4 p-4">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <h5 class="fw-bold text-dark mb-0"><i class="fa-solid fa-table-list text-primary me-2"></i>Database Documents (First 15)</h5>
+            <span class="badge bg-secondary-subtle text-secondary">{{ documents|length }} shown</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle small mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>URL</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for doc in documents[:15] %}
+                        <tr>
+                            <td><code>{{ doc.doc_id }}</code></td>
+                            <td class="fw-semibold text-dark">{{ doc.title }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ doc.category }}</span></td>
+                            <td class="text-truncate text-muted" style="max-width: 250px;">{{ doc.url }}</td>
+                            <td>
+                                <a href="{{ url_for('view_document', doc_id=doc.doc_id) }}" class="btn btn-outline-primary btn-sm py-0 px-2">
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">No documents found. Click "Load Demo Dataset" above.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

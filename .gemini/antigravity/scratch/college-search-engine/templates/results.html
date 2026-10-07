@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block title %}Results for "{{ query }}" | Apex College Search{% endblock %}
+
+{% block content %}
+<div class="results-header bg-light border-bottom py-3">
+    <div class="container-fluid px-lg-4">
+        <!-- Search Bar Row -->
+        <form action="{{ url_for('search') }}" method="GET" class="row g-2 align-items-center">
+            <div class="col-md-6 col-lg-5 position-relative">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 text-muted">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </span>
+                    <input type="text" 
+                           name="q" 
+                           id="search-input" 
+                           class="form-control border-start-0 py-2" 
+                           value="{{ query }}" 
+                           autocomplete="off" 
+                           required>
+                    <button type="submit" class="btn btn-primary px-3">
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+                <!-- Autocomplete Dropdown -->
+                <div id="suggestions-box" class="list-group shadow position-absolute w-100 mt-1 d-none rounded-3 overflow-hidden border-0" style="z-index: 1050;"></div>
+            </div>
+
+            <!-- Category Filter -->
+            <div class="col-auto">
+                <select name="category" class="form-select py-2">
+                    <option value="All" {% if selected_category == 'All' %}selected{% endif %}>All Categories</option>
+                    <option value="Department" {% if selected_category == 'Department' %}selected{% endif %}>Departments</option>
+                    <option value="Admission" {% if selected_category == 'Admission' %}selected{% endif %}>Admissions</option>
+                    <option value="Placement" {% if selected_category == 'Placement' %}selected{% endif %}>Placements</option>
+                    <option value="Examination" {% if selected_category == 'Examination' %}selected{% endif %}>Examinations</option>
+                    <option value="Facilities" {% if selected_category == 'Facilities' %}selected{% endif %}>Facilities</option>
+                    <option value="Student Services" {% if selected_category == 'Student Services' %}selected{% endif %}>Student Services</option>
+                    <option value="Governance" {% if selected_category == 'Governance' %}selected{% endif %}>Governance</option>
+                    <option value="Notices" {% if selected_category == 'Notices' %}selected{% endif %}>Notices</option>
+                </select>
+            </div>
+
+            <!-- Sort By -->
+            <div class="col-auto">
+                <select name="sort" class="form-select py-2" onchange="this.form.submit()">
+                    <option value="relevance" {% if sort_by == 'relevance' %}selected{% endif %}>Sort: Relevance</option>
+                    <option value="title" {% if sort_by == 'title' %}selected{% endif %}>Sort: Title (A-Z)</option>
+                    <option value="category" {% if sort_by == 'category' %}selected{% endif %}>Sort: Category</option>
+                </select>
+            </div>
+
+            <!-- Query Expansion Checkbox -->
+            <div class="col-auto">
+                <div class="form-check form-switch pt-1">
+                    <input class="form-check-input" type="checkbox" name="expand" value="1" id="resExpandSwitch" {% if is_expanded %}checked{% endif %} onchange="this.form.submit()">
+                    <label class="form-check-label small fw-medium" for="resExpandSwitch">
+                        Query Expansion
+                    </label>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="container-fluid px-lg-4 py-4">
+    <div class="row g-4">
+        <!-- Left Sidebar: Filters & IR Details -->
+        <div class="col-lg-3 col-md-4">
+            <!-- Search Summary Card -->
+            <div class="card border-0 shadow-sm rounded-4 p-3 mb-3">
+                <h6 class="fw-bold text-dark mb-2">Search Summary</h6>
+                <div class="text-secondary small mb-2">
+                    Found <strong>{{ total_results }}</strong> results in <strong>{{ execution_time_ms }} ms</strong>
+                </div>
+                {% if expansion_info and expansion_info.is_expanded %}
+                    <div class="alert alert-info py-2 px-3 small rounded-3 mb-2">
+                        <i class="fa-solid fa-wand-magic-sparkles text-primary me-1"></i>
+                        <strong>Expanded with:</strong><br>
+                        {{ expansion_info.synonyms_added | join(', ') }}
+                    </div>
+                {% endif %}
+                <div class="mt-2">
+                    <span class="text-muted small fw-bold">Query Stemmed Tokens:</span>
+                    <div class="d-flex flex-wrap gap-1 mt-1">
+                        {% for tok in query_tokens %}
+                            <span class="badge bg-secondary-subtle text-secondary font-monospace">{{ tok }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ranking Algorithm Card -->
+            <div class="card border-0 shadow-sm rounded-4 p-3 mb-3">
+                <h6 class="fw-bold text-dark mb-2"><i class="fa-solid fa-sliders text-primary me-1"></i> Ranking Formula</h6>
+                <p class="text-muted small mb-2">
+                    Each document score is calculated using multi-factor linear weighting:
+                </p>
+                <div class="bg-light p-2 rounded font-monospace small text-dark mb-2" style="font-size: 0.75rem;">
+                    Score = 0.70 &times; TF-IDF Cosine<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ 0.20 &times; Title Match<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ 0.10 &times; Category Match<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ Feedback Bonus
+                </div>
+                <div class="small text-muted">
+                    Exact title matches receive priority boosting over generic body mentions.
+                </div>
+            </div>
+
+            <!-- Category Filter List -->
+            <div class="card border-0 shadow-sm rounded-4 p-3">
+                <h6 class="fw-bold text-dark mb-2">Filter by Category</h6>
+                <div class="list-group list-group-flush small">
+                    <a href="{{ url_for('search', q=query, category='All', sort=sort_by, expand='1' if is_expanded else '0') }}" 
+                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center px-2 py-2 border-0 rounded-2 {% if selected_category == 'All' %}bg-primary text-white fw-bold{% endif %}">
+                        <span>All Categories</span>
+                        <span class="badge {% if selected_category == 'All' %}bg-white text-primary{% else %}bg-light text-secondary border{% endif %} rounded-pill">{{ all_count }}</span>
+                    </a>
+                    {% for cat, count in category_counts.items() %}
+                        <a href="{{ url_for('search', q=query, category=cat, sort=sort_by, expand='1' if is_expanded else '0') }}" 
+                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center px-2 py-2 border-0 rounded-2 {% if selected_category == cat %}bg-primary text-white fw-bold{% endif %}">
+                            <span>{{ cat }}</span>
+                            <span class="badge {% if selected_category == cat %}bg-white text-primary{% else %}bg-light text-secondary border{% endif %} rounded-pill">{{ count }}</span>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Result Cards -->
+        <div class="col-lg-9 col-md-8">
+            {% if results %}
+                <div class="d-flex flex-column gap-3">
+                    {% for item in results %}
+                        <div class="card result-card border-0 shadow-sm rounded-4 p-3 transition-hover" id="doc-card-{{ item.doc_id }}">
+                            <div class="card-body p-1">
+                                <!-- URL & Category Badges -->
+                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">
+                                            {{ item.category }}
+                                        </span>
+                                        <span class="text-muted small text-truncate" style="max-width: 380px;">
+                                            <i class="fa-solid fa-link me-1 text-secondary"></i> {{ item.url }}
+                                        </span>
+                                    </div>
+                                    <!-- Relevance Score Badge with Breakdown -->
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 fs-6 fw-bold" 
+                                              data-bs-toggle="tooltip" 
+                                              data-bs-html="true"
+                                              title="<strong>Score Breakdown</strong><br>TF-IDF: {{ item.tfidf_score }}<br>Title Match: {{ item.title_score }}<br>Category: {{ item.category_score }}<br>Feedback Bonus: {{ item.feedback_bonus }}">
+                                            Relevance: {{ "%.3f"|format(item.final_score) }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Document Title -->
+                                <h5 class="card-title fw-bold mb-2">
+                                    <a href="{{ url_for('view_document', doc_id=item.doc_id, q=query) }}" 
+                                       class="text-decoration-none text-primary hover-underline result-title"
+                                       onclick="logClick('{{ query }}', '{{ item.doc_id }}')">
+                                        {{ item.title }}
+                                    </a>
+                                </h5>
+
+                                <!-- Highlighted Snippet -->
+                                <p class="card-text text-secondary mb-2 snippet-text">
+                                    {{ item.snippet | safe }}
+                                </p>
+
+                                <!-- Footer Bar: Matched Terms and Relevance Feedback Button -->
+                                <div class="d-flex flex-wrap align-items-center justify-content-between pt-2 border-top mt-2">
+                                    <div class="d-flex align-items-center gap-1 small text-muted">
+                                        <span class="me-1">Matched terms:</span>
+                                        {% for m in item.matched_terms %}
+                                            <span class="badge bg-light text-dark border font-monospace">{{ m }}</span>
+                                        {% endfor %}
+                                    </div>
+
+                                    <!-- Interactive Relevance Feedback Button -->
+                                    <div>
+                                        <button type="button" 
+                                                class="btn btn-sm {% if item.is_feedback_marked %}btn-success text-white{% else %}btn-outline-secondary{% endif %} feedback-btn" 
+                                                data-doc-id="{{ item.doc_id }}" 
+                                                data-query="{{ query }}"
+                                                onclick="toggleFeedback(this, '{{ query }}', '{{ item.doc_id }}')">
+                                            <i class="fa-solid {% if item.is_feedback_marked %}fa-check{% else %}fa-thumbs-up{% endif %} me-1"></i>
+                                            <span>{% if item.is_feedback_marked %}Marked Relevant{% else %}Mark as Relevant{% endif %}</span>
+                                        </button>
+                                        <a href="{{ url_for('view_document', doc_id=item.doc_id, q=query) }}" class="btn btn-sm btn-outline-primary ms-1">
+                                            View Page <i class="fa-solid fa-arrow-up-right-from-square ms-1"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                {% if total_pages > 1 %}
+                    <nav class="mt-4" aria-label="Search results navigation">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item {% if current_page <= 1 %}disabled{% endif %}">
+                                <a class="page-link" href="{{ url_for('search', q=query, category=selected_category, sort=sort_by, page=current_page-1, expand='1' if is_expanded else '0') }}">Previous</a>
+                            </li>
+                            {% for p in range(1, total_pages + 1) %}
+                                <li class="page-item {% if p == current_page %}active{% endif %}">
+                                    <a class="page-link" href="{{ url_for('search', q=query, category=selected_category, sort=sort_by, page=p, expand='1' if is_expanded else '0') }}">{{ p }}</a>
+                                </li>
+                            {% endfor %}
+                            <li class="page-item {% if current_page >= total_pages %}disabled{% endif %}">
+                                <a class="page-link" href="{{ url_for('search', q=query, category=selected_category, sort=sort_by, page=current_page+1, expand='1' if is_expanded else '0') }}">Next</a>
+                            </li>
+                        </ul>
+                    </nav>
+                {% endif %}
+
+            {% else %}
+                <!-- Empty State -->
+                <div class="card border-0 shadow-sm rounded-4 p-5 text-center">
+                    <div class="mb-3 text-secondary">
+                        <i class="fa-solid fa-magnifying-glass-arrow-right fa-4x text-muted"></i>
+                    </div>
+                    <h4 class="fw-bold text-dark">No matching college documents found</h4>
+                    <p class="text-secondary mx-auto mb-4" style="max-width: 500px;">
+                        We couldn't find any documents matching <strong>"{{ query }}"</strong> under category <strong>"{{ selected_category }}"</strong>.
+                    </p>
+                    <div class="d-flex justify-content-center gap-2">
+                        {% if not is_expanded %}
+                            <a href="{{ url_for('search', q=query, category='All', expand='1') }}" class="btn btn-primary rounded-pill px-4">
+                                <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Retry with Query Expansion
+                            </a>
+                        {% endif %}
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary rounded-pill px-4">
+                            Back to Home
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

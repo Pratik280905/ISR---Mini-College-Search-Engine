@@ -1,0 +1,17 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Database and indexes (optional, can be generated)
+*.db-journal
+*.log
+
+# OS generated
+.DS_Store
+Thumbs.db

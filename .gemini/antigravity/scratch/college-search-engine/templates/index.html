@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}Apex College Search | Information Storage & Retrieval{% endblock %}
+
+{% block content %}
+<div class="search-hero-container py-5">
+    <div class="container py-lg-4 text-center">
+        <!-- Brand Title & Subtitle -->
+        <div class="mb-4">
+            <div class="d-inline-flex align-items-center justify-content-center p-3 bg-primary bg-opacity-10 rounded-circle text-primary mb-3 shadow-sm">
+                <i class="fa-solid fa-graduation-cap fa-3x"></i>
+            </div>
+            <h1 class="display-5 fw-bold text-dark mb-2">COLLEGE SEARCH</h1>
+            <p class="lead text-secondary mx-auto" style="max-width: 650px;">
+                Intelligent Information Retrieval System for Academic Departments, Admissions, Placements, Examinations, and Campus Facilities.
+            </p>
+        </div>
+
+        <!-- Central Search Bar Form -->
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                <form action="{{ url_for('search') }}" method="GET" class="search-form position-relative text-start">
+                    <div class="input-group input-group-lg shadow-lg rounded-pill overflow-hidden border border-primary-subtle bg-white">
+                        <span class="input-group-text bg-white border-0 ps-4 text-primary">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </span>
+                        <input type="text" 
+                               name="q" 
+                               id="search-input" 
+                               class="form-control border-0 py-3 ps-2 pe-3 text-dark fs-5" 
+                               placeholder="Search college information (e.g. computer engineering admission)..." 
+                               autocomplete="off" 
+                               required>
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold d-flex align-items-center gap-2">
+                            <span>Search</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+
+                    <!-- Instant Autocomplete Suggestion Dropdown -->
+                    <div id="suggestions-box" class="list-group shadow position-absolute w-100 mt-1 d-none rounded-3 overflow-hidden border-0" style="z-index: 1050;"></div>
+
+                    <!-- Search Controls: Filters & Query Expansion -->
+                    <div class="d-flex flex-wrap align-items-center justify-content-between mt-3 px-2 text-muted small">
+                        <!-- Category Selector -->
+                        <div class="d-flex align-items-center gap-2 mb-2 mb-sm-0">
+                            <i class="fa-solid fa-filter text-primary"></i>
+                            <span class="fw-medium">Category:</span>
+                            <select name="category" class="form-select form-select-sm border-0 bg-light shadow-sm" style="width: auto;">
+                                <option value="All" selected>All Categories</option>
+                                <option value="Department">Departments</option>
+                                <option value="Admission">Admissions & Fees</option>
+                                <option value="Placement">Placements & Jobs</option>
+                                <option value="Examination">Examinations</option>
+                                <option value="Facilities">Hostel & Library</option>
+                                <option value="Student Services">Student Services</option>
+                                <option value="Governance">Governance</option>
+                                <option value="Notices">Notices & Events</option>
+                            </select>
+                        </div>
+
+                        <!-- Query Expansion Switch -->
+                        <div class="form-check form-switch mb-2 mb-sm-0">
+                            <input class="form-check-input" type="checkbox" name="expand" value="1" id="expandSwitch" checked>
+                            <label class="form-check-label fw-medium cursor-pointer" for="expandSwitch">
+                                <i class="fa-solid fa-wand-magic-sparkles text-warning me-1"></i> Query Expansion <span class="badge bg-light text-dark border">Synonyms</span>
+                            </label>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Example Search Queries Tags -->
+                <div class="mt-4 pt-2">
+                    <p class="text-uppercase text-secondary fw-bold" style="font-size: 0.75rem; letter-spacing: 1px;">
+                        <i class="fa-regular fa-lightbulb text-warning me-1"></i> Suggested Academic Queries:
+                    </p>
+                    <div class="d-flex flex-wrap justify-content-center gap-2">
+                        <a href="{{ url_for('search', q='computer engineering admission') }}" class="btn btn-outline-secondary btn-sm rounded-pill sample-query-btn">
+                            computer engineering admission
+                        </a>
+                        <a href="{{ url_for('search', q='placement statistics average package') }}" class="btn btn-outline-secondary btn-sm rounded-pill sample-query-btn">
+                            placement statistics
+                        </a>
+                        <a href="{{ url_for('search', q='scholarship eligibility') }}" class="btn btn-outline-secondary btn-sm rounded-pill sample-query-btn">
+                            scholarship eligibility
+                        </a>
+                        <a href="{{ url_for('search', q='semester examination timetable') }}" class="btn btn-outline-secondary btn-sm rounded-pill sample-query-btn">
+                            examination timetable
+                        </a>
+                        <a href="{{ url_for('search', q='hostel accommodation fees') }}" class="btn btn-outline-secondary btn-sm rounded-pill sample-query-btn">
+                            hostel fees
+                        </a>
+                        <a href="{{ url_for('search', q='central library digital books') }}" class="btn btn-outline-secondary btn-sm rounded-pill sample-query-btn">
+                            library facilities
+                        </a>
+                        <a href="{{ url_for('search', q='summer internship training') }}" class="btn btn-outline-secondary btn-sm rounded-pill sample-query-btn">
+                            internship opportunities
+                        </a>
+                        <a href="{{ url_for('search', q='faculty professors qualifications') }}" class="btn btn-outline-secondary btn-sm rounded-pill sample-query-btn">
+                            faculty directory
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ISR Architecture Pillars Section -->
+<div class="container py-5 my-3 border-top">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold text-dark">Information Storage & Retrieval Architecture</h2>
+        <p class="text-secondary">Demonstration of core classical IR concepts implemented in this engine</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Pillar 1 -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 border-0 shadow-sm rounded-4 p-3 isr-feature-card">
+                <div class="card-body">
+                    <div class="feature-icon bg-primary bg-opacity-10 text-primary rounded-3 p-3 mb-3 d-inline-block">
+                        <i class="fa-solid fa-filter-circle-dollar fa-2x"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark">NLP Preprocessing</h5>
+                    <p class="text-muted small mb-0">
+                        HTML cleaning, lowercase normalization, regex tokenization, stop-word filtering, and Porter Stemming with acronym preservation.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pillar 2 -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 border-0 shadow-sm rounded-4 p-3 isr-feature-card">
+                <div class="card-body">
+                    <div class="feature-icon bg-success bg-opacity-10 text-success rounded-3 p-3 mb-3 d-inline-block">
+                        <i class="fa-solid fa-network-wired fa-2x"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark">Inverted Index</h5>
+                    <p class="text-muted small mb-0">
+                        High-efficiency postings mapping <code>term &rarr; {doc_id: tf}</code> with document frequencies and vocabulary index persistence.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pillar 3 -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 border-0 shadow-sm rounded-4 p-3 isr-feature-card">
+                <div class="card-body">
+                    <div class="feature-icon bg-info bg-opacity-10 text-info rounded-3 p-3 mb-3 d-inline-block">
+                        <i class="fa-solid fa-calculator fa-2x"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark">TF-IDF & Ranking</h5>
+                    <p class="text-muted small mb-0">
+                        Vector space model with sublinear TF scaling, smoothed IDF, Cosine Similarity, and 0.70/0.20/0.10 multi-factor title boosting.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pillar 4 -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 border-0 shadow-sm rounded-4 p-3 isr-feature-card">
+                <div class="card-body">
+                    <div class="feature-icon bg-warning bg-opacity-10 text-warning rounded-3 p-3 mb-3 d-inline-block">
+                        <i class="fa-solid fa-bullseye fa-2x"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark">Evaluation (MRR & MAP)</h5>
+                    <p class="text-muted small mb-0">
+                        Benchmarking across 20 labeled test queries measuring Precision@K, Recall@K, F1-score, Mean Reciprocal Rank, and Mean Average Precision.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

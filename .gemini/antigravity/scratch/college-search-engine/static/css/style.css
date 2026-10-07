@@ -1,0 +1,119 @@
+/* Custom Styling for Apex College Search Engine */
+:root {
+    --primary-color: #0d6efd;
+    --primary-hover: #0b5ed7;
+    --card-border-radius: 16px;
+    --bg-light: #f8fafc;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg-light);
+    color: #334155;
+}
+
+/* Brand Icon */
+.brand-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: rgba(13, 110, 253, 0.2);
+    color: #60a5fa;
+    border-radius: 8px;
+}
+
+/* Hero Section */
+.search-hero-container {
+    padding-top: 3.5rem;
+    padding-bottom: 3.5rem;
+}
+
+/* Card hover animation */
+.transition-hover {
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.transition-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04) !important;
+}
+
+.isr-feature-card {
+    transition: transform 0.2s ease;
+}
+.isr-feature-card:hover {
+    transform: translateY(-4px);
+}
+
+/* Search Term Highlighting */
+mark.search-highlight {
+    background-color: #fef08a !important; /* soft yellow */
+    color: #854d0e !important;
+    font-weight: 600;
+    padding: 0.15em 0.35em;
+    border-radius: 4px;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+}
+
+/* Snippet and Title styling */
+.result-title:hover {
+    color: var(--primary-hover) !important;
+    text-decoration: underline !important;
+}
+
+.snippet-text {
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+/* Autocomplete Suggestion Dropdown */
+#suggestions-box {
+    background: #ffffff;
+    max-height: 280px;
+    overflow-y: auto;
+}
+#suggestions-box .list-group-item {
+    cursor: pointer;
+    font-size: 0.95rem;
+    padding: 10px 16px;
+    border-bottom: 1px solid #f1f5f9;
+}
+#suggestions-box .list-group-item:hover,
+#suggestions-box .list-group-item.active {
+    background-color: #f0f7ff;
+    color: var(--primary-color);
+}
+
+/* Sample query pills */
+.sample-query-btn {
+    font-size: 0.82rem;
+    font-weight: 500;
+    background-color: #ffffff;
+    border-color: #e2e8f0;
+    color: #475569;
+    transition: all 0.15s ease;
+}
+.sample-query-btn:hover {
+    background-color: #e0f2fe;
+    border-color: #bae6fd;
+    color: #0284c7;
+}
+
+/* Terminal output for crawler */
+#crawl-log-terminal {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    color: #38bdf8;
+}
+
+/* Tooltip custom style */
+.tooltip-inner {
+    max-width: 250px;
+    text-align: left;
+    padding: 8px 12px;
+}
